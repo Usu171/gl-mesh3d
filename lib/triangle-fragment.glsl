@@ -14,6 +14,7 @@ uniform float roughness
             , kdiffuse
             , kspecular;
 uniform sampler2D texture;
+uniform bool colormapCyclic;
 
 varying vec3 f_normal
            , f_lightDirection
@@ -40,7 +41,13 @@ void main() {
 
   float diffuse  = min(kambient + kdiffuse * max(dot(N, L), 0.0), 1.0);
 
-  vec4 surfaceColor = vec4(f_color.rgb, 1.0) * texture2D(texture, f_uv);
+  float u = f_uv.x;
+  if(colormapCyclic) {
+    const float PI = 3.141592653589793;
+    float angle = atan(-f_uv.y, -f_uv.x);
+    u = (angle + PI) / (2.0 * PI);
+  }
+  vec4 surfaceColor = vec4(f_color.rgb, 1.0) * texture2D(texture, vec2(u, 0.0));
   vec4 litColor = surfaceColor.a * vec4(diffuse * surfaceColor.rgb + kspecular * vec3(1,1,1) * specular,  1.0);
 
   gl_FragColor = litColor * f_color.a;

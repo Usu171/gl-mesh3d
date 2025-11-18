@@ -104,6 +104,7 @@ function SimplicialMesh(gl
   this.contourCount      = 0
   this.contourColor      = [0,0,0]
   this.contourEnable     = true
+  this.colormapCyclic    = true
 
   this.pickVertex        = true;
   this.pickId            = 1
@@ -262,6 +263,10 @@ proto.update = function(params) {
     this.hasAlpha = true;
   }
 
+  if('colormapCyclic' in params) {
+    this.colormapCyclic = !!params.colormapCyclic
+  }
+
   if('ambient' in params) {
     this.ambientLight  = params.ambient
   }
@@ -287,6 +292,10 @@ proto.update = function(params) {
     this.texture.magFilter = gl.LINEAR
     this.texture.setPixels(genColormap(params.colormap, this.opacityscale))
     this.texture.generateMipmap()
+    if(this.colormapCyclic) {
+      this.texture.minFilter = gl.LINEAR; 
+      this.texture.wrap = [gl.REPEAT, gl.CLAMP_TO_EDGE]; 
+    }
   }
 
   var cells = params.cells
@@ -450,19 +459,31 @@ fill_loop:
         if(vertexUVs) {
           uv = vertexUVs[v]
         } else if(vertexIntensity) {
-          uv = [
-            (vertexIntensity[v] - intensityLo) /
-            (intensityHi - intensityLo), 0]
+          var ratio = (vertexIntensity[v] - intensityLo) / (intensityHi - intensityLo)
+          if(this.colormapCyclic) {
+            var angle = 2.0 * Math.PI * ratio
+            uv = [Math.cos(angle), Math.sin(angle)]
+          } else {
+            uv = [ratio, 0]
+          }
         } else if(cellUVs) {
           uv = cellUVs[i]
         } else if(cellIntensity) {
-          uv = [
-            (cellIntensity[i] - intensityLo) /
-            (intensityHi - intensityLo), 0]
+          var ratio = (cellIntensity[i] - intensityLo) / (intensityHi - intensityLo)
+          if(this.colormapCyclic) {
+            var angle = 2.0 * Math.PI * ratio
+            uv = [Math.cos(angle), Math.sin(angle)]
+          } else {
+            uv = [ratio, 0]
+          }
         } else {
-          uv = [
-            (p[2] - intensityLo) /
-            (intensityHi - intensityLo), 0]
+          var ratio = (p[2] - intensityLo) / (intensityHi - intensityLo)
+          if(this.colormapCyclic) {
+            var angle = 2.0 * Math.PI * ratio
+            uv = [Math.cos(angle), Math.sin(angle)]
+          } else {
+            uv = [ratio, 0]
+          }
         }
         pUVs.push(uv[0], uv[1])
 
@@ -522,19 +543,31 @@ fill_loop:
           if(vertexUVs) {
             uv = vertexUVs[v]
           } else if(vertexIntensity) {
-            uv = [
-              (vertexIntensity[v] - intensityLo) /
-              (intensityHi - intensityLo), 0]
+            var ratio = (vertexIntensity[v] - intensityLo) / (intensityHi - intensityLo)
+            if(this.colormapCyclic) {
+              var angle = 2.0 * Math.PI * ratio
+              uv = [Math.cos(angle), Math.sin(angle)]
+            } else {
+              uv = [ratio, 0]
+            }
           } else if(cellUVs) {
             uv = cellUVs[i]
           } else if(cellIntensity) {
-            uv = [
-              (cellIntensity[i] - intensityLo) /
-              (intensityHi - intensityLo), 0]
+            var ratio = (cellIntensity[i] - intensityLo) / (intensityHi - intensityLo)
+            if(this.colormapCyclic) {
+              var angle = 2.0 * Math.PI * ratio
+              uv = [Math.cos(angle), Math.sin(angle)]
+            } else {
+              uv = [ratio, 0]
+            }
           } else {
-            uv = [
-              (p[2] - intensityLo) /
-              (intensityHi - intensityLo), 0]
+            var ratio = (p[2] - intensityLo) / (intensityHi - intensityLo)
+            if(this.colormapCyclic) {
+              var angle = 2.0 * Math.PI * ratio
+              uv = [Math.cos(angle), Math.sin(angle)]
+            } else {
+              uv = [ratio, 0]
+            }
           }
           eUVs.push(uv[0], uv[1])
 
@@ -590,19 +623,31 @@ fill_loop:
           if(vertexUVs) {
             uv = vertexUVs[v]
           } else if(vertexIntensity) {
-            uv = [
-              (vertexIntensity[v] - intensityLo) /
-              (intensityHi - intensityLo), 0]
+            var ratio = (vertexIntensity[v] - intensityLo) / (intensityHi - intensityLo)
+            if(this.colormapCyclic) {
+              var angle = 2.0 * Math.PI * ratio
+              uv = [Math.cos(angle), Math.sin(angle)]
+            } else {
+              uv = [ratio, 0]
+            }
           } else if(cellUVs) {
             uv = cellUVs[i]
           } else if(cellIntensity) {
-            uv = [
-              (cellIntensity[i] - intensityLo) /
-              (intensityHi - intensityLo), 0]
+            var ratio = (cellIntensity[i] - intensityLo) / (intensityHi - intensityLo)
+            if(this.colormapCyclic) {
+              var angle = 2.0 * Math.PI * ratio
+              uv = [Math.cos(angle), Math.sin(angle)]
+            } else {
+              uv = [ratio, 0]
+            }
           } else {
-            uv = [
-              (p[2] - intensityLo) /
-              (intensityHi - intensityLo), 0]
+            var ratio = (p[2] - intensityLo) / (intensityHi - intensityLo)
+            if(this.colormapCyclic) {
+              var angle = 2.0 * Math.PI * ratio
+              uv = [Math.cos(angle), Math.sin(angle)]
+            } else {
+              uv = [ratio, 0]
+            }
           }
           tUVs.push(uv[0], uv[1])
 
@@ -680,6 +725,8 @@ proto.drawTransparent = proto.draw = function(params) {
 
     texture:    0
   }
+
+  uniforms.colormapCyclic = this.colormapCyclic// ? 1 : 0
 
   uniforms.inverseModel = invert(uniforms.inverseModel, uniforms.model)
 
